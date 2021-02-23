@@ -15,12 +15,8 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    
-    - id: install packages
-      run: npm install
-      
-    - id: run
-      env:
+    - env:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
+    - run: npm install
     - run: node index.js --trace-warnings
