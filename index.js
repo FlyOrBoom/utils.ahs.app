@@ -69,6 +69,12 @@ async function main(){
 *Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).*
 			`
 		},
+		{
+			name: 'Keepin’ it Arcadia',
+			path: 'KiA',
+			url: 'https://feed.podbean.com/arcadiaunified/feed.xml',
+			footer: ``
+		},
 	]
 	
 	let articles = []
