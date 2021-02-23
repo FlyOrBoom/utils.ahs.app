@@ -1,3 +1,4 @@
+# Fetch and post RSS articles
 name: Fetch
 
 on:
