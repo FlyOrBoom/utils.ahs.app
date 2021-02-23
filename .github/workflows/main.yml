@@ -18,4 +18,4 @@ jobs:
       env:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
-    - run: node index.js
+    - run: npm install && node index.js
