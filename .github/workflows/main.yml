@@ -15,8 +15,8 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
+    - run: npm install
+    - run: node index.js $EMAIL $PASSWORD true
       env:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
-    - run: npm install
-    - run: node index.js $EMAIL $PASSWORD true
