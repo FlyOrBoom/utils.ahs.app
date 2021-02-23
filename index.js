@@ -53,9 +53,9 @@ async function main(){
 			url: 'https://dciausd.weebly.com/articles/feed',
 			footer: `
 
-DCI Interns on the news team write articles that are often published on local newspapers, such as Arcadia Patch and the Arcadia Weekly. The articles, ranging in subject, dive into the AUSD world and cover events, opportunities, news, and first-hand accounts of unique stories in the community.
+*DCI Interns on the news team write articles that are often published on local newspapers, such as Arcadia Patch and the Arcadia Weekly. The articles, ranging in subject, dive into the AUSD world and cover events, opportunities, news, and first-hand accounts of unique stories in the community.*
 
-Read more of their stories at [dciausd.weebly.com](https://dciausd.weebly.com).`,
+*Read more of their stories at [dciausd.weebly.com](https://dciausd.weebly.com).*`,
 		},
 		{
 			name: 'Arcadia Quill',
@@ -63,9 +63,9 @@ Read more of their stories at [dciausd.weebly.com](https://dciausd.weebly.com).`
 			url: 'https://arcadiaquill.com/feed',
 			footer: `
 
-The Arcadia Quill is a daily student publication throughout the school year. The paper has been continuously published since Arcadia High School opened in 1952. It covers topics such as school, local, and world news, as well as the various activities and pop culture trends prevalent on campus.
+*The Arcadia Quill is a daily student publication throughout the school year. The paper has been continuously published since Arcadia High School opened in 1952. It covers topics such as school, local, and world news, as well as the various activities and pop culture trends prevalent on campus.*
 
-Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).
+*Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).*
 			`
 		},
 	]
@@ -117,7 +117,7 @@ Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).
 						hasHTML: true,
 					}
 					for(const [local_name,remote_name] of map){
-						if(article[local_name] && remote_name){
+						if((local_name in article) && remote_name){
 							remote[remote_name] = article[local_name]
 						}
 					}
