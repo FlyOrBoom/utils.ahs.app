@@ -2,8 +2,8 @@
 name: fetch
 
 on:
-#   schedule:
-#     - cron: "0 15 * * *" # 15:00 UTC / 7am PDT /8 am PST
+  schedule:
+    - cron: "0 15 * * *" # 15:00 UTC / 7am PDT /8 am PST
   workflow_dispatch:
 
 jobs:
