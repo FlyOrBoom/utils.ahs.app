@@ -1,6 +1,5 @@
 const ARGS = process.argv.slice(2)
-const [EMAIL,PASSWORD] = ARGS
-
+const [EMAIL,PASSWORD,POST] = ARGS
 const fetch = require('node-fetch')
 const DomParser = require('dom-parser')
 const Turndown = require('turndown')
@@ -45,8 +44,6 @@ const map = [
 	['date', 'articleDate', null],
 	['timestamp', 'articleUnixEpoch','notificationUnixEpoch'],
 ]
-
-const POST = true
 
 async function main(){
 
@@ -106,7 +103,7 @@ async function main(){
 		}))
 	}
 
-	if(!POST) return false
+	if(POST==='false') return
 
 	return firebase
 		.auth()
