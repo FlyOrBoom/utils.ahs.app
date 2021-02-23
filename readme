@@ -1,0 +1,1 @@
+rss.ahs.app fetches articles from arcadia high student news organizations and posts them to arcadia high mobile's firebase realtime database
