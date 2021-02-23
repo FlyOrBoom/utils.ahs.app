@@ -1,5 +1,5 @@
-# Fetch and post RSS articles
-name: Fetch
+# fetch and post RSS articles
+name: fetch
 
 on:
   schedule:
@@ -15,7 +15,7 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    - env:
+      env:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
     - run: node index.js
