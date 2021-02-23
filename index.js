@@ -1,6 +1,5 @@
 const ARGS = process.argv.slice(2)
 const [EMAIL,PASSWORD,POST] = ARGS
-console.log(ARGS,EMAIL,PASSWORD,POST)
 const fetch = require('node-fetch')
 const DomParser = require('dom-parser')
 const Turndown = require('turndown')
