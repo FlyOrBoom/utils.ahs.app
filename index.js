@@ -1,4 +1,6 @@
-require('dotenv').config()
+const ARGS = process.argv.slice(2)
+const [EMAIL,PASSWORD] = ARGS
+
 const fetch = require('node-fetch')
 const DomParser = require('dom-parser')
 const Turndown = require('turndown')
@@ -108,10 +110,7 @@ async function main(){
 
 	return firebase
 		.auth()
-		.signInWithEmailAndPassword(
-			process.env.EMAIL,
-			process.env.PASSWORD
-		)
+		.signInWithEmailAndPassword(EMAIL,PASSWORD)
 		.then(() => {
 			database.ref('secrets/webhook').once('value',snapshot=>{
 				const webhook = snapshot.val()

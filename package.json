@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "dom-parser": "^0.1.6",
-    "dotenv": "^8.2.0",
     "firebase": "^8.2.9",
     "marked": "^2.0.0",
     "node-fetch": "^2.6.1",
