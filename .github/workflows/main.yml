@@ -19,4 +19,4 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
     - run: npm install
-    - run: node --trace-warnings index.js $EMAIL $PASSWORD
+    - run: node index.js $EMAIL $PASSWORD
