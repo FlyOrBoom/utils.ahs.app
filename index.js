@@ -83,11 +83,13 @@ Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).
 			const article = {
 				title: item.getElementsByTagName('title')[0].innerHTML,
 				md: html_to_md(item.getElementsByTagName('content')[0].innerHTML)+feed.footer,
-				author: item.getElementsByTagName('dc')[0]?.innerHTML,
-				timpstamp: ~~(Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000),
-				hasHTML: true,
-				isFeatured: false,
-				isNotified: false,
+				author: item.getElementsByTagName('dc')[0]?.innerHTML || '',
+				timpstamp: ~~(
+					Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)
+					/1000
+				),
+				feature: false,
+				notify: false,
 				location: 'publications',
 				category: feed.path,
 			}
@@ -111,22 +113,22 @@ Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).
 			database.ref('secrets/webhook').once('value',snapshot=>{
 				const webhook = snapshot.val()
 				for(const article of articles){
-					let remote = {}
+					let remote = {
+						hasHTML: true,
+					}
 					for(const [local_name,remote_name] of map){
-						if(local_name in article){
+						if(article[local_name] && remote_name){
 							remote[remote_name] = article[local_name]
 						}
 					}
-					console.log(remote)
 					database
 						.ref(article.location+'/'+article.category+'/'+article.id)
 						.update(remote)
 					postWebhook(webhook,article)
+					console.log('published '+article.title)
 				}
 			})
 		})
-
-
 }
 
 async function postWebhook(webhook,article){
@@ -137,9 +139,9 @@ async function postWebhook(webhook,article){
 		embeds: [{
 			color: 11730954,
 			author: {
-				name: user.email,
+				name: 'bot@x-ing.space',
 			},
-			title: `Auto-published ${article.title}`,
+			title: `Auto-updated ${article.title}`,
 			url: `https://internal.ahs.app/editor?id=${article.id}`,
 			footer: {
 				text: `${article.location} > ${article.category}`,
@@ -156,7 +158,7 @@ async function postWebhook(webhook,article){
 			body: JSON.stringify(payload),
 		},
 	)
-	console.log(response)
+	return response
 }
 
 function makeID(...seeds){
