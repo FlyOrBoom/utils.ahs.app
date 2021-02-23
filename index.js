@@ -91,7 +91,7 @@ async function main(){
 				title: item.getElementsByTagName('title')[0].innerHTML,
 				body: item.getElementsByTagName('content')[0].innerHTML,
 				author: item.getElementsByTagName('dc')[0]?.innerHTML || '',
-				timpstamp: Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000,
+				timestamp: Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000,
 				feature: false,
 				notify: false,
 				location: 'publications',
