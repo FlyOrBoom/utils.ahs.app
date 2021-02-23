@@ -44,6 +44,8 @@ const map = [
 	['timestamp', 'articleUnixEpoch','notificationUnixEpoch'],
 ]
 
+const POST = true
+
 async function main(){
 
 	const feeds = [
@@ -82,12 +84,9 @@ async function main(){
 		articles.push(...items.map(item=>{
 			const article = {
 				title: item.getElementsByTagName('title')[0].innerHTML,
-				md: html_to_md(item.getElementsByTagName('content')[0].innerHTML)+feed.footer,
+				body: item.getElementsByTagName('content')[0].innerHTML,
 				author: item.getElementsByTagName('dc')[0]?.innerHTML || '',
-				timpstamp: ~~(
-					Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)
-					/1000
-				),
+				timpstamp: Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000,
 				feature: false,
 				notify: false,
 				location: 'publications',
@@ -98,12 +97,16 @@ async function main(){
 					new RegExp(`.{${~~(article.title.length/3)}}`,'g')
 				)
 			)
-			article.body = md_to_html(article.md)
+			article.images = article.body.match(/(?<=\<img src\=['"]).*?(?=['"].*?\>)/g)
+ 			article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+feed.footer
+ 			article.body = md_to_html(article.md)
 			return article
 		}))
 	}
 
-	firebase
+	if(!POST) return false
+
+	return firebase
 		.auth()
 		.signInWithEmailAndPassword(
 			process.env.EMAIL,
@@ -124,14 +127,17 @@ async function main(){
 					database
 						.ref(article.location+'/'+article.category+'/'+article.id)
 						.update(remote)
-					postWebhook(webhook,article)
-					console.log('published '+article.title)
 				}
+				const report = `Published or modified ${articles.length} articles:\n`
+				+articles.map(a=>'\n · '+a.title).join('')
+
+				postWebhook(webhook,report)
+				console.log(report)
 			})
 		})
 }
 
-async function postWebhook(webhook,article){
+async function postWebhook(webhook,description){
 	const payload = {
 		username: 'ACES edit log',
 		avatar_url: 'https://internal.ahs.app/icon.png',
@@ -141,10 +147,11 @@ async function postWebhook(webhook,article){
 			author: {
 				name: 'bot@x-ing.space',
 			},
-			title: `Auto-updated ${article.title}`,
-			url: `https://internal.ahs.app/editor?id=${article.id}`,
+			title: `Auto-updated Publications`,
+			url: `https://ahs.app/#location-publications`,
+			description,
 			footer: {
-				text: `${article.location} > ${article.category}`,
+				text: `Publications > DCI & Arcadia Quill`,
 			},			
 		}],
 	}
