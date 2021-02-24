@@ -79,15 +79,24 @@ async function main(){
 				for(const key in feed.props){
 					article[key] = item.getElementsByTagName(feed.props[key])[0]?.innerHTML || 'None'
 				}
+
 				article.timestamp = ~~(Date.parse(article.date)/1000),
 				article.id = makeID(
 					...article.title.match(
 						new RegExp(`.{${~~(article.title.length/3)}}`,'g')
 					)
 				)
+
 				article.images = article.body.match(/(?<=\<img src\=['"]).*?(?=['"].*?\>)/g)
 				article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+'\n\n'+feed.footer
 				article.body = md_to_html(article.md)
+
+				switch(feed.path){
+					case 'APN':
+						article.videos = [article.video]
+						article.images = [`https://img.youtube.com/vi/${article.video}/mqdefault.jpg`]
+						break
+				}
 
 				return article
 			})
