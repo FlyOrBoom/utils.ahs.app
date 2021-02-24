@@ -86,7 +86,7 @@ async function main(){
 					)
 				)
 				article.images = article.body.match(/(?<=\<img src\=['"]).*?(?=['"].*?\>)/g)
-				article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+feed.footer
+				article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+'\n\n'+feed.footer
 				article.body = md_to_html(article.md)
 
 				return article
