@@ -47,7 +47,7 @@ const map = [
 
 firebase
 	.auth()
-	.signInWithEmailAndPassword(EMAIL,PASSWORD)
+	.signInWithEmailAndPassword(argv.email,argv.password)
 	.then(main)
 setTimeout(()=>process.exit(),60*1000)
 
@@ -83,8 +83,6 @@ async function main(){
 		},
 	]
 	
-	let articles = []
-
 	for(const feed of feeds){
 		const items = await fetch(feed.url)
 			.then(response => response.text())
@@ -125,7 +123,7 @@ async function main(){
 			return [article.id,remote]
 		}))
 		
-		if(!argv.debug) continue
+		if(argv.debug) continue
 
 		database.ref('secrets/webhook').once('value',snapshot=>{
 			const webhook = snapshot.val()
