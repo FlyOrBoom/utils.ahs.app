@@ -16,7 +16,8 @@ jobs:
       with:
         node-version: '14'
     - run: npm install
-    - run: node index.js \
-            --email    ${{ secrets.EMAIL}} \
-            --password ${{ secrets.PASSWORD }} \
-            --key      ${{ secrets.KEY }}
+    - run: >
+        node index.js
+        --email    "${{secrets.EMAIL}}"
+        --password "${{secrets.PASSWORD}}"
+        --key      "${{secrets.KEY}}"
