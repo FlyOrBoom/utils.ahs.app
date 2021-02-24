@@ -44,6 +44,13 @@ const map = [
 	['timestamp', 'articleUnixEpoch','notificationUnixEpoch'],
 ]
 
+
+firebase
+	.auth()
+	.signInWithEmailAndPassword(EMAIL,PASSWORD)
+	.then(main)
+setTimeout(()=>process.exit(),60*1000)
+
 async function main(){
 
 	const feeds = [
@@ -68,6 +75,12 @@ async function main(){
 *Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).*
 			`
 		},
+		{
+			name: 'Keepin’ it Arcadia',
+			path: 'KiA',
+			url: 'https://feed.podbean.com/arcadiaunified/feed.xml',
+			footer: ``
+		},
 	]
 	
 	let articles = []
@@ -79,12 +92,12 @@ async function main(){
 			.then(parse_xml)
 			.then(xml => xml.getElementsByTagName('item'))
 		
-		articles.push(...items.map(item=>{
+		const articles = items.slice(0,12).map(item=>{
 			const article = {
 				title: item.getElementsByTagName('title')[0].innerHTML,
 				body: item.getElementsByTagName('content')[0].innerHTML,
 				author: item.getElementsByTagName('dc')[0]?.innerHTML || '',
-				timpstamp: Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000,
+				timestamp: Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000,
 				feature: false,
 				notify: false,
 				location: 'publications',
@@ -98,41 +111,37 @@ async function main(){
 			article.images = article.body.match(/(?<=\<img src\=['"]).*?(?=['"].*?\>)/g)
  			article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+feed.footer
  			article.body = md_to_html(article.md)
+
 			return article
-		}))
-	}
-
-	if(argv.debug) return
-
-	return firebase
-		.auth()
-		.signInWithEmailAndPassword(argv.email,argv.password)
-		.then(() => {
-			database.ref('secrets/webhook').once('value',snapshot=>{
-				const webhook = snapshot.val()
-				for(const article of articles){
-					let remote = {
-						hasHTML: true,
-					}
-					for(const [local_name,remote_name] of map){
-						if((local_name in article) && remote_name){
-							remote[remote_name] = article[local_name]
-						}
-					}
-					database
-						.ref(article.location+'/'+article.category+'/'+article.id)
-						.update(remote)
-				}
-				const report = `Published or modified ${articles.length} articles:\n`
-				+articles.map(a=>'\n · '+a.title).join('')
-
-				postWebhook(webhook,report)
-				console.log(report)
-			})
 		})
+
+		const remote = Object.fromEntries(articles.map(article=>{
+			let remote = {
+				hasHTML: true,
+			}
+			for(const [local_name,remote_name] of map)
+				if((local_name in article) && remote_name)
+					remote[remote_name] = article[local_name]
+			return [article.id,remote]
+		}))
+		
+		if(!argv.debug) continue
+
+		database.ref('secrets/webhook').once('value',snapshot=>{
+			const webhook = snapshot.val()
+			database.ref('publications/'+feed.path).set(remote)
+
+			const report = `\nPublished or modified ${articles.length} articles:`
+			+articles.map(a=>'\n · '+a.title).join('')
+
+			postWebhook(webhook,report,feed.name)
+
+			return console.log(report)
+		})
+	}
 }
 
-async function postWebhook(webhook,description){
+async function postWebhook(webhook,description,name){
 	const payload = {
 		username: 'ACES edit log',
 		avatar_url: 'https://internal.ahs.app/icon.png',
@@ -146,7 +155,7 @@ async function postWebhook(webhook,description){
 			url: `https://ahs.app/#location-publications`,
 			description,
 			footer: {
-				text: `Publications > DCI & Arcadia Quill`,
+				text: 'Publications > '+name,
 			},			
 		}],
 	}
@@ -178,4 +187,3 @@ function randomElement(array,seed){
 }
 
 
-main()
