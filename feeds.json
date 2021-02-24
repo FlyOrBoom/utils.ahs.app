@@ -1,0 +1,54 @@
+[
+    {
+        "name":"DCI",
+        "path":"DCI",
+        "url":"https://dciausd.weebly.com/articles/feed",
+        "item":"item",
+        "props":{
+            "title":"title",
+            "author":"",
+            "date":"pubDate",
+            "body":"content"
+        },
+        "footer":"*DCI Interns on the news team write articles that are often published on local newspapers, such as Arcadia Patch and the Arcadia Weekly. The articles, ranging in subject, dive into the AUSD world and cover events, opportunities, news, and first-hand accounts of unique stories in the community.*\n\n*Read more of their stories at [dciausd.weebly.com](https://dciausd.weebly.com).*"
+    },
+    {
+        "name":"Arcadia Quill",
+        "path":"Quill",
+        "item":"item",
+        "props":{
+            "title":"title",
+            "author":"dcXcreator",
+            "date":"pubDate",
+            "body":"content"
+        },
+        "url":"https://arcadiaquill.com/feed",
+        "footer":"*The Arcadia Quill is a daily student publication throughout the school year. The paper has been continuously published since Arcadia High School opened in 1952. It covers topics such as school, local, and world news, as well as the various activities and pop culture trends prevalent on campus.*\n\n*Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).*"
+    },
+    {
+        "name":"Apache News",
+        "path":"APN",
+        "item":"entry",
+        "props":{
+            "title":"mediaXtitle",
+            "author":"name",
+            "date":"published",
+            "body":"mediaXdescription"
+        },
+        "url":"https://www.youtube.com/feeds/videos.xml?channel_id=UC6G_LCSmfd9q34BMao87E0g",
+        "footer":"*Apache News is a weekly news and entertainment show produced by the students of Advanced Media Production at Arcadia High School. In addition to the weekly news shows, APN covers live sporting events on campus and remotely at other schools. APN also produces a late night comedy show and several documentary shorts throughout the school year.*\n\n*Subscribe to their channel on [YouTube](https://www.youtube.com/channel/UC6G_LCSmfd9q34BMao87E0g?sub_confirmation=1).*"
+    },
+    {
+        "name":"Keepin’ it Arcadia",
+        "path":"KiA",
+        "item":"item",
+        "props":{
+            "title":"title",
+            "author":"",
+            "date":"pubDate",
+            "body":"description"
+        },
+        "url":"https://feed.podbean.com/arcadiaunified/feed.xml",
+        "footer":""
+    }
+]

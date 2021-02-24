@@ -1,6 +1,7 @@
+const fs = require('fs')
 const argv = require('minimist')(process.argv.slice(2))
 const fetch = require('node-fetch')
-const DomParser = require('dom-parser')
+const DOMParser = require('dom-parser')
 const Turndown = require('turndown')
 const marked = require('marked')
 const seedrandom = require('seedrandom')
@@ -20,9 +21,9 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig) 
 const database = firebase.database() 
 
-const parser = new DomParser()
+const parser = new DOMParser()
 const turned = new Turndown()
-const parse_xml = str => parser.parseFromString(str, 'text/xml')
+const parse_xml = str => parser.parseFromString(str)
 const html_to_md = html => turned.turndown(html)
 const md_to_html = md => marked(md)
 
@@ -53,90 +54,69 @@ setTimeout(()=>process.exit(),60*1000)
 
 async function main(){
 
-	const feeds = [
-		{
-			name: 'DCI',
-			path: 'DCI',
-			url: 'https://dciausd.weebly.com/articles/feed',
-			footer: `
+	fs.readFile('feeds.json',async (err,data)=>{
+		for(const feed of JSON.parse(data)){
+			const items = await fetch(feed.url)
+				// Get plaintext XML
+				.then(response => response.text())
+				// Remove CDATA blocks
+				.then(text => text.replace(/(\<\!\[CDATA\[|\]\]\>)/g,''))
+				// Sanitize colons in tag names
+				.then(text => text.replace(/(\<\/?\w+)\:(\w+.*?\>)/g,'$1X$2'))
+				// Parse XML
+				.then(parse_xml)
+				// Get the individual entries
+				.then(xml => xml.getElementsByTagName(feed.item))
 
-*DCI Interns on the news team write articles that are often published on local newspapers, such as Arcadia Patch and the Arcadia Weekly. The articles, ranging in subject, dive into the AUSD world and cover events, opportunities, news, and first-hand accounts of unique stories in the community.*
-
-*Read more of their stories at [dciausd.weebly.com](https://dciausd.weebly.com).*`,
-		},
-		{
-			name: 'Arcadia Quill',
-			path: 'Quill',
-			url: 'https://arcadiaquill.com/feed',
-			footer: `
-
-*The Arcadia Quill is a daily student publication throughout the school year. The paper has been continuously published since Arcadia High School opened in 1952. It covers topics such as school, local, and world news, as well as the various activities and pop culture trends prevalent on campus.*
-
-*Read more of their stories at [arcadiaquill.com](https://arcadiaquill.com).*
-			`
-		},
-		{
-			name: 'Keepin’ it Arcadia',
-			path: 'KiA',
-			url: 'https://feed.podbean.com/arcadiaunified/feed.xml',
-			footer: ``
-		},
-	]
-	
-	for(const feed of feeds){
-		const items = await fetch(feed.url)
-			.then(response => response.text())
-			.then(text => text.replace(/(\<\!\[CDATA\[|\]\]\>)/g,''))
-			.then(parse_xml)
-			.then(xml => xml.getElementsByTagName('item'))
-		
-		const articles = items.slice(0,12).map(item=>{
-			const article = {
-				title: item.getElementsByTagName('title')[0].innerHTML,
-				body: item.getElementsByTagName('content')[0].innerHTML,
-				author: item.getElementsByTagName('dc')[0]?.innerHTML || '',
-				timestamp: Date.parse(item.getElementsByTagName('pubDate')[0]?.innerHTML)/1000,
-				feature: false,
-				notify: false,
-				location: 'publications',
-				category: feed.path,
-			}
-			article.id = makeID(
-				...article.title.match(
-					new RegExp(`.{${~~(article.title.length/3)}}`,'g')
+			const articles = items.slice(0,12).map(item=>{
+				const article = {
+					feature: false,
+					notify: false,
+					location: 'publications',
+					category: feed.path,
+				}
+				
+				for(const key in feed.props){
+					article[key] = item.getElementsByTagName(feed.props[key])[0]?.innerHTML || 'None'
+				}
+				article.timestamp = ~~(Date.parse(article.date)/1000),
+				article.id = makeID(
+					...article.title.match(
+						new RegExp(`.{${~~(article.title.length/3)}}`,'g')
+					)
 				)
-			)
-			article.images = article.body.match(/(?<=\<img src\=['"]).*?(?=['"].*?\>)/g)
- 			article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+feed.footer
- 			article.body = md_to_html(article.md)
+				article.images = article.body.match(/(?<=\<img src\=['"]).*?(?=['"].*?\>)/g)
+				article.md = html_to_md(article.body.replace(/\<img.*?\>/g,''))+feed.footer
+				article.body = md_to_html(article.md)
 
-			return article
-		})
+				return article
+			})
 
-		const remote = Object.fromEntries(articles.map(article=>{
-			let remote = {
-				hasHTML: true,
-			}
-			for(const [local_name,remote_name] of map)
-				if((local_name in article) && remote_name)
-					remote[remote_name] = article[local_name]
-			return [article.id,remote]
-		}))
-		
-		if(argv.debug) continue
+			const remote = Object.fromEntries(articles.map(article=>{
+				let remote = {
+					hasHTML: true,
+				}
+				for(const [local_name,remote_name] of map)
+					if((local_name in article) && remote_name)
+						remote[remote_name] = article[local_name]
+				return [article.id,remote]
+			}))
+			
+			if(argv.debug) continue
 
-		database.ref('secrets/webhook').once('value',snapshot=>{
-			const webhook = snapshot.val()
-			database.ref('publications/'+feed.path).set(remote)
+			database.ref('secrets/webhook').once('value',snapshot=>{
+				const webhook = snapshot.val()
+				database.ref('publications/'+feed.path).set(remote)
 
-			const report = `\nPublished or modified ${articles.length} articles:`
-			+articles.map(a=>'\n · '+a.title).join('')
+				const report = `\nPublished or modified ${articles.length} articles:`
+				+articles.map(a=>'\n · '+a.title).join('')
 
-			postWebhook(webhook,report,feed.name)
+				postWebhook(webhook,report,feed.name)
 
-			return console.log(report)
-		})
-	}
+				return console.log(report)
+			})
+		}
+	})
 }
 
 async function postWebhook(webhook,description,name){
