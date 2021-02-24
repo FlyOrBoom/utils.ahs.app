@@ -95,6 +95,7 @@ async function main(){
 					case 'APN':
 						article.videos = [article.video]
 						article.images = [`https://img.youtube.com/vi/${article.video}/mqdefault.jpg`]
+						if(article.title.startsWith('APN ')) article.feature = true
 						break
 				}
 
