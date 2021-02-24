@@ -1,5 +1,4 @@
-const ARGS = process.argv.slice(2)
-const [EMAIL,PASSWORD,POST] = ARGS
+const argv = require('minimist')(process.argv.slice(2))
 const fetch = require('node-fetch')
 const DomParser = require('dom-parser')
 const Turndown = require('turndown')
@@ -10,7 +9,7 @@ const firebase = require('firebase/app')
 require('firebase/auth')
 require('firebase/database')
 const firebaseConfig = {
-	apiKey: 'AIzaSyDEUekXeyIKJUreRaX78lsEYBt8JGHYmHE',
+	apiKey: argv.key,
 	authDomain: 'arcadia-high-mobile.firebaseapp.com',
 	databaseURL: 'https://arcadia-high-mobile.firebaseio.com',
 	projectId: 'arcadia-high-mobile',
@@ -103,11 +102,11 @@ async function main(){
 		}))
 	}
 
-	if(POST==='false') return
+	if(argv.debug) return
 
 	return firebase
 		.auth()
-		.signInWithEmailAndPassword(EMAIL,PASSWORD)
+		.signInWithEmailAndPassword(argv.email,argv.password)
 		.then(() => {
 			database.ref('secrets/webhook').once('value',snapshot=>{
 				const webhook = snapshot.val()
