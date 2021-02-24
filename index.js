@@ -130,7 +130,7 @@ async function main(){
 
 		database.ref('secrets/webhook').once('value',snapshot=>{
 			const webhook = snapshot.val()
-			database.ref(feed.path).update(remote)
+			database.ref('publications/'+feed.path).update(remote)
 
 			const report = `\nPublished or modified ${articles.length} articles:`
 			+articles.map(a=>'\n · '+a.title).join('')
