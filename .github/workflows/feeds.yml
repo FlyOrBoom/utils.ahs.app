@@ -1,5 +1,5 @@
 # fetch and post RSS articles
-name: fetch
+name: feeds
 
 on:
   schedule:
@@ -17,7 +17,7 @@ jobs:
         node-version: '14'
     - run: npm install
     - run: >
-        node index.js
+        node feeds.js
         --email    "${{secrets.EMAIL}}"
         --password "${{secrets.PASSWORD}}"
         --key      "${{secrets.KEY}}"
