@@ -30,6 +30,7 @@ async function main(){
 		const response = await fetch('https://arcadia-high-mobile.firebaseio.com/'+location+'.json')
 		const remote = await response.json()
 		for(const category in remote){
+			let articles = []
 			for(const id in remote[category]){
 				const article = remote[category][id]
 				article.title = article.articleTitle ?? 'None'
@@ -44,6 +45,7 @@ async function main(){
 				
 				delete article.articleTitle
 				delete article.articleUnixEpoch
+				delete article.articleImages
 				delete article.articleVideoIDs
 				delete article.articleAuthor
 				delete article.articleBody
@@ -61,6 +63,7 @@ async function main(){
 				delete article.featured
 				delete article.videoIDs
 
+				article.id = id
 				if(article.imageURLs?.length){
 					const body = new FormData()
 					body.append('image', article.imageURLs[0])
@@ -73,7 +76,9 @@ async function main(){
 					if(thumb) article.thumbURLs = [thumb]
 				}
 				delete article.imageURLs
+				articles.push(article)
 			}
+			remote[category]=articles
 		}
 		if(argv.debug) continue
 		database.ref('snippets/'+location).set(remote)
