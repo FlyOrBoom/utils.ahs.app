@@ -60,6 +60,7 @@ async function main(){
 				delete article.author
 				delete article.body
 				delete article.md
+				delete article.notified
 				delete article.featured
 				delete article.videoIDs
 
