@@ -21,3 +21,4 @@ jobs:
         --email    "${{secrets.EMAIL}}"
         --password "${{secrets.PASSWORD}}"
         --key      "${{secrets.KEY}}"
+        --imgbb    "${{secrets.IMGBB}}"
