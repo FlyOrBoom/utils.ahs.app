@@ -65,6 +65,7 @@ async function main(){
 				delete article.author
 				delete article.body
 				delete article.md
+				delete article.date
 				delete article.videoIDs
 
 				article.id = id
