@@ -42,7 +42,12 @@ async function main(){
 				article.notified = article.isNotified ?? false
 				if(article.articleImages) article.imageURLs = article.articleImages
 				if(article.articleVideoIDs) article.videoIDs = article.articleVideoIDs
-				
+				article.date = new Date(article.timestamp * 1000).toLocaleDateString(undefined, {
+					weekday: 'long',
+					month: 'long',
+					day: 'numeric'
+				})
+
 				delete article.articleTitle
 				delete article.articleUnixEpoch
 				delete article.articleImages
