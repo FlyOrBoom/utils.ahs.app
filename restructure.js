@@ -32,7 +32,16 @@ async function main(){
 		for(const category in remote){
 			for(const id in remote[category]){
 				const article = remote[category][id]
-				database.ref('articles/'+id).set(article)
+				article.title = article.articleTitle || 'None'
+				article.author = article.articleAuthor || 'None'
+				article.body = article.articleBody || 'None'
+				article.md = article.articleMd || 'None'
+				article.timestamp = article.articleUnixEpoch || 0
+				article.featured = article.isFeatured || false
+				article.notified = article.isNotified || false
+				article.imageURLs = article.articleImages || []
+				article.videoIDs = article.articleVideoIDs || []
+				
 				delete article.articleVideoIDs
 				delete article.articleAuthor
 				delete article.articleBody
@@ -41,17 +50,25 @@ async function main(){
 				delete article.isNotified
 				delete article.articleDate
 
-				if(article.articleImages?.length){
+				database.ref('articles/'+id).set(article)
+
+				delete article.author
+				delete article.body
+				delete article.md
+				delete article.featured
+				delete article.videoIDs
+
+				if(article.imageURLs.length){
 					const body = new FormData()
-					body.append('image', article.articleImages[0])
+					body.append('image', article.imageURLs[0])
 					const response = await fetch(argv.imgbb, {
 						body,
 						method: "POST"
 					})
 					const result = await response.json()
-					console.log(result.data.thumb.url)
+					article.thumbURLs = [result?.data?.thumb?.url]
 				}
-				delete article.articleImages
+				delete article.imageURLs
 			}
 		}
 		if(argv.debug) continue
