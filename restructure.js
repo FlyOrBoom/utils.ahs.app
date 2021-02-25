@@ -49,7 +49,8 @@ async function main(){
 						method: "POST"
 					})
 					const result = await response.json()
-					console.log(result.data.thumb.url)
+					const thumb = result?.data?.thumb?.url
+					if(thumb) article.thumb = thumb
 				}
 				delete article.articleImages
 			}
