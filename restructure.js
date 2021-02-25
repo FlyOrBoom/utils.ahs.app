@@ -32,22 +32,25 @@ async function main(){
 		for(const category in remote){
 			for(const id in remote[category]){
 				const article = remote[category][id]
-				article.title = article.articleTitle || 'None'
-				article.author = article.articleAuthor || 'None'
-				article.body = article.articleBody || 'None'
-				article.md = article.articleMd || 'None'
-				article.timestamp = article.articleUnixEpoch || 0
-				article.featured = article.isFeatured || false
-				article.notified = article.isNotified || false
-				article.imageURLs = article.articleImages || []
-				article.videoIDs = article.articleVideoIDs || []
+				article.title = article.articleTitle ?? 'None'
+				article.author = article.articleAuthor ?? 'None'
+				article.body = article.articleBody ?? 'None'
+				article.md = article.articleMd ?? 'None'
+				article.timestamp = article.articleUnixEpoch ?? 0
+				article.featured = article.isFeatured ?? false
+				article.notified = article.isNotified ?? false
+				if(article.articleImages) article.imageURLs = article.articleImages
+				if(article.articleVideoIDs) article.videoIDs = article.articleVideoIDs
 				
+				delete article.articleTitle
+				delete article.articleUnixEpoch
 				delete article.articleVideoIDs
 				delete article.articleAuthor
 				delete article.articleBody
 				delete article.articleMd
 				delete article.hasHTML
 				delete article.isNotified
+				delete article.isFeatured
 				delete article.articleDate
 
 				database.ref('articles/'+id).set(article)
@@ -58,7 +61,7 @@ async function main(){
 				delete article.featured
 				delete article.videoIDs
 
-				if(article.imageURLs.length){
+				if(article.imageURLs?.length){
 					const body = new FormData()
 					body.append('image', article.imageURLs[0])
 					const response = await fetch(argv.imgbb, {
@@ -66,7 +69,8 @@ async function main(){
 						method: "POST"
 					})
 					const result = await response.json()
-					article.thumbURLs = [result?.data?.thumb?.url]
+					const thumb = result?.data?.thumb?.url
+					if(thumb) article.thumbURLs = [thumb]
 				}
 				delete article.imageURLs
 			}
