@@ -79,7 +79,7 @@ async function main(){
 				delete article.imageURLs
 				articles.push(article)
 			}
-			remote[category]=articles
+			remote[category]=articles.sort((a,b)=>b.timestamp-a.timestamp)
 		}
 		if(argv.debug) continue
 		database.ref('snippets/'+location).set(remote)
