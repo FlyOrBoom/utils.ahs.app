@@ -95,8 +95,10 @@ async function main(){
 					case 'APN':
 						article.videos = [article.video]
 						article.images = [`https://img.youtube.com/vi/${article.video}/mqdefault.jpg`]
-						if(article.title.startsWith('APN ')) article.feature = true
+						article.title = article.title.split(': ')[1]
 						break
+					case 'KiA':
+						article.title = article.title.split(/#\d+\s/)[1]
 				}
 
 				return article
