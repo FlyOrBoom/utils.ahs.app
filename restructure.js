@@ -87,7 +87,9 @@ async function main(){
 				articles.push(article)
 			}
 			if(argv.debug) continue
-			database.ref('snippets/'+location_index+'/categories/'+category_index).update({articles})
+			database
+				.ref('snippets/'+location_index+'/categories/'+category_index+'/articles')
+				.set(articles.sort((a,b)=>b.timestamp-a.timestamp))
 		}
 	}
 }
