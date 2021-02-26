@@ -5,7 +5,7 @@ const FormData = require('form-data')
 const firebase = require('firebase/app')
 require('firebase/auth')
 require('firebase/database')
-const firebaseConfig = {
+firebase.initializeApp({
 	apiKey: argv.key,
 	authDomain: 'arcadia-high-mobile.firebaseapp.com',
 	databaseURL: 'https://arcadia-high-mobile.firebaseio.com',
@@ -13,8 +13,7 @@ const firebaseConfig = {
 	storageBucket: 'arcadia-high-mobile.appspot.com',
 	messagingSenderId: '654225823864',
 	appId: '1:654225823864:web:944772a5cadae0c8b7758d'
-  }
-const app = firebase.initializeApp(firebaseConfig) 
+}) 
 
 const database = firebase.database() 
 
@@ -24,15 +23,19 @@ firebase
 	.then(main)
 setTimeout(()=>process.exit(),60*1000)
 
+async function db(...path){
+	const response = await fetch('https://arcadia-high-mobile.firebaseio.com/'+path.join('/')+'.json')
+	return await response.json()
+}
+
 async function main(){
-	const locations = ['homepage','bulletin','publications','other']
-	for (const location of locations){
-		const response = await fetch('https://arcadia-high-mobile.firebaseio.com/'+location+'.json')
-		const remote = await response.json()
-		for(const category in remote){
+	const snippets = await db('snippets')
+	for (const [location_index,location] of snippets.entries()){
+		for(const [category_index,category] of location.categories.entries()){
+			const remote = await db(location.id,category.id)
 			let articles = []
-			for(const id in remote[category]){
-				const article = remote[category][id]
+			for(const id in remote){
+				const article = remote[id]
 				article.title = article.articleTitle ?? 'None'
 				article.author = article.articleAuthor ?? 'None'
 				article.body = article.articleBody ?? 'None'
@@ -83,9 +86,8 @@ async function main(){
 				delete article.imageURLs
 				articles.push(article)
 			}
-			remote[category]=articles.sort((a,b)=>b.timestamp-a.timestamp)
+			if(argv.debug) continue
+			database.ref('snippets/'+location_index+'/categories/'+category_index).update({articles})
 		}
-		if(argv.debug) continue
-		database.ref('snippets/'+location).set(remote)
 	}
 }
