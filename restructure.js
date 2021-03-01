@@ -67,15 +67,16 @@ async function main(){
 					})
 					article.views = old.articleViews ?? 0
 					if(article.imageURLs?.length){
-						const body = new FormData()
-						body.append('image', article.imageURLs[0])
-						const response = await fetch(argv.imgbb, {
-							body,
-							method: "POST"
-						})
-						const result = await response.json()
-						const thumb = result?.data?.thumb?.url
-						if(thumb) article.thumbURLs = [thumb]
+// 						const body = new FormData()
+// 						body.append('image', article.imageURLs[0])
+// 						const response = await fetch(argv.imgbb, {
+// 							body,
+// 							method: "POST"
+// 						})
+// 						const result = await response.json()
+// 						const thumb = result?.data?.thumb?.url
+// 						if(thumb) article.thumbURLs = [thumb]
+						article.thumbURLs = [article.imageURLs[0]]
 					}
 
 					database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
