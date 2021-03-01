@@ -58,8 +58,8 @@ async function main(){
 					}
 			
 					article.markdown = old.articleMd ?? turned.turndown(article.body)
-					if(article.articleImages) article.imageURLs = old.articleImages
-					if(article.articleVideoIDs) article.videoIDs = old.articleVideoIDs
+					if(old.articleImages) article.imageURLs = old.articleImages
+					if(old.articleVideoIDs) article.videoIDs = old.articleVideoIDs
 					article.date = new Date(article.timestamp * 1000).toLocaleDateString(undefined, {
 						weekday: 'long',
 						month: 'long',
