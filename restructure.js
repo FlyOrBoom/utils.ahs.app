@@ -39,7 +39,7 @@ async function main(){
 					article.title = article.articleTitle ?? 'None'
 					article.author = article.articleAuthor ?? 'None'
 					article.body = article.articleBody ?? 'None'
-					article.md = article.articleMd ?? 'None'
+					const markdown = article.articleMd ?? 'None'
 					article.timestamp = article.articleUnixEpoch ?? 0
 					article.featured = article.isFeatured ?? false
 					article.notified = article.isNotified ?? false
@@ -64,10 +64,10 @@ async function main(){
 					delete article.articleDate
 
 					database.ref('articles/'+id).set(article)
+					database.ref('markdown/'+id).set(markdown)
 
 					delete article.author
 					delete article.body
-					delete article.md
 					delete article.date
 					delete article.videoIDs
 
