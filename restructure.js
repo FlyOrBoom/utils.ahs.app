@@ -51,8 +51,8 @@ async function main(){
 						month: 'long',
 						day: 'numeric'
 					})
+					article.views = article.articleViews ?? 0
 					const markdown = article.articleMd ?? turned.turndown(article.body)
-					const views = article.articleViews ?? 0
 
 					delete article.articleTitle
 					delete article.articleUnixEpoch
