@@ -2,6 +2,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const fetch = require('node-fetch')
 const FormData = require('form-data')
 const Turndown = require('turndown')
+const turned = new Turndown()
 
 const firebase = require('firebase/app')
 require('firebase/auth')
@@ -40,7 +41,7 @@ async function main(){
 					article.title = article.articleTitle ?? 'None'
 					article.author = article.articleAuthor ?? 'None'
 					article.body = article.articleBody ?? 'None'
-					const markdown = article.articleMd ?? Turndown.turndown(article.body)
+					const markdown = article.articleMd ?? turned.turndown(article.body)
 					article.timestamp = article.articleUnixEpoch ?? 0
 					article.featured = article.isFeatured ?? false
 					article.notified = article.isNotified ?? false
