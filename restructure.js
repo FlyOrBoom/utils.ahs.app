@@ -80,7 +80,7 @@ async function main(){
 
 					database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
 					database.ref('markdowns/'+id).set(article.markdown)
-					database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views']))
+					database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views','thumbURLs']))
 				}
 				database
 					.ref('layout/'+location_index+'/categories/'+category_index+'/articles')
