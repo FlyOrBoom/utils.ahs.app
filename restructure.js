@@ -1,6 +1,8 @@
 const argv = require('minimist')(process.argv.slice(2))
 const fetch = require('node-fetch')
 const FormData = require('form-data')
+const Turndown = require('turndown')
+const turned = new Turndown()
 
 const firebase = require('firebase/app')
 require('firebase/auth')
@@ -27,51 +29,43 @@ async function old_db(...path){
 	const response = await fetch('https://arcadia-high-mobile.firebaseio.com/'+path.join('/')+'.json')
 	return await response.json()
 }
+function filter_object(original,keys){
+	return Object.keys(original)
+		.filter(key => keys.includes(key))
+		.reduce((obj, key) => {
+		return {
+			...obj,
+			[key]: original[key]
+			};
+		}, {})
+}
 async function main(){
-	database.ref('snippets').get().then(async function(snapshot){
-		const snippets = snapshot.val()
-		for (const [location_index,location] of snippets.entries()){
+	database.ref('layout').get().then(async function(snapshot){
+		const layout = snapshot.val()
+		for (const [location_index,location] of layout.entries()){
 			for(const [category_index,category] of location.categories.entries()){
 				const remote = await old_db(location.id,category.id)
-				let articles = []
 				for(const id in remote){
-					const article = remote[id]
-					article.title = article.articleTitle ?? 'None'
-					article.author = article.articleAuthor ?? 'None'
-					article.body = article.articleBody ?? 'None'
-					article.md = article.articleMd ?? 'None'
-					article.timestamp = article.articleUnixEpoch ?? 0
-					article.featured = article.isFeatured ?? false
-					article.notified = article.isNotified ?? false
-					if(article.articleImages) article.imageURLs = article.articleImages
-					if(article.articleVideoIDs) article.videoIDs = article.articleVideoIDs
+					const old = remote[id]
+					const article = {
+						id,
+						title: old.articleTitle ?? 'None',
+						author: old.articleAuthor ?? 'None',
+						body: old.articleBody ?? 'None',
+						timestamp: old.articleUnixEpoch ?? 0,
+						featured: old.isFeatured ?? false,
+						notified: old.isNotified ?? false,
+					}
+			
+					article.markdown = old.articleMd ?? turned.turndown(article.body)
+					if(article.articleImages) article.imageURLs = old.articleImages
+					if(article.articleVideoIDs) article.videoIDs = old.articleVideoIDs
 					article.date = new Date(article.timestamp * 1000).toLocaleDateString(undefined, {
 						weekday: 'long',
 						month: 'long',
 						day: 'numeric'
 					})
-
-					delete article.articleTitle
-					delete article.articleUnixEpoch
-					delete article.articleImages
-					delete article.articleVideoIDs
-					delete article.articleAuthor
-					delete article.articleBody
-					delete article.articleMd
-					delete article.hasHTML
-					delete article.isNotified
-					delete article.isFeatured
-					delete article.articleDate
-
-					database.ref('articles/'+id).set(article)
-
-					delete article.author
-					delete article.body
-					delete article.md
-					delete article.date
-					delete article.videoIDs
-
-					article.id = id
+					article.views = old.articleViews ?? 0
 					if(article.imageURLs?.length){
 						const body = new FormData()
 						body.append('image', article.imageURLs[0])
@@ -83,13 +77,14 @@ async function main(){
 						const thumb = result?.data?.thumb?.url
 						if(thumb) article.thumbURLs = [thumb]
 					}
-					delete article.imageURLs
-					articles.push(article)
+
+					database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
+					database.ref('markdowns/'+id).set(article.markdown)
+					database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views']))
 				}
-				if(argv.debug) continue
 				database
-					.ref('snippets/'+location_index+'/categories/'+category_index+'/articles')
-					.set(articles.sort((a,b)=>b.timestamp-a.timestamp))
+					.ref('layout/'+location_index+'/categories/'+category_index+'/articles')
+					.set(Object.keys(remote).sort((a,b)=>remote[b].articleUnixEpoch-remote[a].articleUnixEpoch))
 			}
 		}
 	})
