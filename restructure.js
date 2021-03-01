@@ -41,7 +41,6 @@ async function main(){
 					article.title = article.articleTitle ?? 'None'
 					article.author = article.articleAuthor ?? 'None'
 					article.body = article.articleBody ?? 'None'
-					const markdown = article.articleMd ?? turned.turndown(article.body)
 					article.timestamp = article.articleUnixEpoch ?? 0
 					article.featured = article.isFeatured ?? false
 					article.notified = article.isNotified ?? false
@@ -52,6 +51,8 @@ async function main(){
 						month: 'long',
 						day: 'numeric'
 					})
+					const markdown = article.articleMd ?? turned.turndown(article.body)
+					const views = article.articleViews ?? 0
 
 					delete article.articleTitle
 					delete article.articleUnixEpoch
@@ -74,6 +75,7 @@ async function main(){
 					delete article.videoIDs
 
 					article.id = id
+					article.views = views
 					if(article.imageURLs?.length){
 						const body = new FormData()
 						body.append('image', article.imageURLs[0])
