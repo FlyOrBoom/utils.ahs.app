@@ -64,7 +64,7 @@ async function main(){
 					delete article.articleDate
 
 					database.ref('articles/'+id).set(article)
-					database.ref('markdown/'+id).set(markdown)
+					database.ref('markdowns/'+id).set(markdown)
 
 					delete article.author
 					delete article.body
