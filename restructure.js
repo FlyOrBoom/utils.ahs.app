@@ -84,7 +84,7 @@ async function main(){
 					database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views','thumbURLs']))
 				}
 				database
-					.ref('layout/'+location_index+'/categories/'+category_index+'/articles')
+					.ref('layout/'+location_index+'/categories/'+category_index+'/articleIDs')
 					.set(Object.keys(remote).sort((a,b)=>remote[b].articleUnixEpoch-remote[a].articleUnixEpoch))
 			}
 		}
