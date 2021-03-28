@@ -40,34 +40,38 @@ function filter_object(original,keys){
 		}, {})
 }
 async function main(){
-	database.ref('layout').get().then(async function(snapshot){
-		const layout = snapshot.val()
-		let featured = []
-		for (const [location_index,location] of layout.entries()){
-			for(const [category_index,category] of location.categories.entries()){
-				const remote = await old_db(location.id,category.id)
-				for(const id in remote){
-					const old = remote[id]
-					const article = {
-						id,
-						title: old.articleTitle ?? 'None',
-						author: old.articleAuthor ?? 'None',
-						body: old.articleBody ?? 'None',
-						timestamp: old.articleUnixEpoch ?? 0,
-						featured: old.isFeatured ?? false,
-						notified: old.isNotified ?? false,
-					}
-			
-					article.markdown = old.articleMd ?? turned.turndown(article.body)
-					if(old.articleImages) article.imageURLs = old.articleImages
-					if(old.articleVideoIDs) article.videoIDs = old.articleVideoIDs
-					article.date = new Date(article.timestamp * 1000).toLocaleDateString(undefined, {
-						weekday: 'long',
-						month: 'long',
-						day: 'numeric'
-					})
-					article.views = old.articleViews ?? 0
-					if(article.imageURLs?.length){
+	const locationIDs = (await database.ref('locationIDs').get()).val()
+	const locations = (await database.ref('locations').get()).val()
+	const categories = (await database.ref('categoryIDs').get()).val()
+
+	let featured = []
+	for (const locationID of locationIDs){
+		for(const categoryID of locations[locationID].categoryIDs){
+			console.log(locationID,categoryID)
+			const remote = await old_db(locationID,categoryID)
+			if(!remote) continue
+			for(const id in remote){
+				const old = remote[id]
+				const article = {
+					id,
+					title: old.articleTitle ?? 'None',
+					author: old.articleAuthor ?? 'None',
+					body: old.articleBody ?? 'None',
+					timestamp: old.articleUnixEpoch ?? 0,
+					featured: old.isFeatured ?? false,
+					notified: old.isNotified ?? false,
+				}
+		
+				article.markdown = old.articleMd ?? turned.turndown(article.body)
+				if(old.articleImages) article.imageURLs = old.articleImages
+				if(old.articleVideoIDs) article.videoIDs = old.articleVideoIDs
+				article.date = new Date(article.timestamp * 1000).toLocaleDateString(undefined, {
+					weekday: 'long',
+					month: 'long',
+					day: 'numeric'
+				})
+				article.views = old.articleViews ?? 0
+				if(article.imageURLs?.length){
 // 						const body = new FormData()
 // 						body.append('image', article.imageURLs[0])
 // 						const response = await fetch(argv.imgbb, {
@@ -77,22 +81,21 @@ async function main(){
 // 						const result = await response.json()
 // 						const thumb = result?.data?.thumb?.url
 // 						if(thumb) article.thumbURLs = [thumb]
-						article.thumbURLs = [article.imageURLs[0]]
-					}
-
-					if(article.featured) featured.push([id,article.timestamp])
-
-					database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
-					database.ref('markdowns/'+id).set(article.markdown)
-					database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views','thumbURLs']))
+					article.thumbURLs = [article.imageURLs[0]]
 				}
-				database
-					.ref('categories/'+category.id+'/articleIDs')
-					.set(Object.keys(remote).sort((a,b)=>remote[b].articleUnixEpoch-remote[a].articleUnixEpoch))
+
+				if(article.featured) featured.push([id,article.timestamp])
+
+				database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
+				database.ref('markdowns/'+id).set(article.markdown)
+				database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views','thumbURLs']))
 			}
+			database
+				.ref('categories/'+categoryID+'/articleIDs')
+				.set(Object.keys(remote).sort((a,b)=>remote[b].articleUnixEpoch-remote[a].articleUnixEpoch))
 		}
-		database
-			.ref('categories/Featured/articleIDs')
-			.set(featured.sort((a,b)=>b[1]-a[1]).map(a=>a[0]))
-	})
+	}
+	database
+		.ref('categories/Featured/articleIDs')
+		.set(featured.sort((a,b)=>b[1]-a[1]).map(a=>a[0]))
 }
