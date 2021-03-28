@@ -42,6 +42,7 @@ function filter_object(original,keys){
 async function main(){
 	database.ref('layout').get().then(async function(snapshot){
 		const layout = snapshot.val()
+		let featured = []
 		for (const [location_index,location] of layout.entries()){
 			for(const [category_index,category] of location.categories.entries()){
 				const remote = await old_db(location.id,category.id)
@@ -79,14 +80,19 @@ async function main(){
 						article.thumbURLs = [article.imageURLs[0]]
 					}
 
+					if(article.featured) featured.push([id,article.timestamp])
+
 					database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
 					database.ref('markdowns/'+id).set(article.markdown)
 					database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views','thumbURLs']))
 				}
 				database
-					.ref('layout/'+location_index+'/categories/'+category_index+'/articleIDs')
+					.ref('categories/'+category.id+'/articleIDs')
 					.set(Object.keys(remote).sort((a,b)=>remote[b].articleUnixEpoch-remote[a].articleUnixEpoch))
 			}
 		}
+		database
+			.ref('categories/Featured/articleIDs')
+			.set(featured.sort((a,b)=>b[1]-a[1]).map(a=>a[0]))
 	})
 }
