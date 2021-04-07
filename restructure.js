@@ -40,11 +40,13 @@ function filter_object(original,keys){
 		}, {})
 }
 async function main(){
+
 	const locationIDs = (await database.ref('locationIDs').get()).val()
 	const locations = (await database.ref('locations').get()).val()
 	const categories = (await database.ref('categoryIDs').get()).val()
 
 	let featured = []
+	let notifs = []
 	for (const locationID of locationIDs){
 		for(const categoryID of locations[locationID].categoryIDs){
 			console.log(locationID,categoryID)
@@ -85,6 +87,16 @@ async function main(){
 				}
 
 				if(article.featured) featured.push([id,article.timestamp])
+				if(article.notified) {
+					const old_notif = await old_db('notifications/'+id)
+					const notif = {
+						title: article.title,
+						blurb: old_notif.notificationBody ?? 'None',
+						categoryID,
+						notifTimestamp: old_notif.notificationUnixEpoch ?? 0,
+					}
+					database.ref('notifications/'+id).set(notif)
+				}
 
 				database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
 				database.ref('markdowns/'+id).set(article.markdown)
