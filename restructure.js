@@ -92,9 +92,9 @@ async function main(){
 					const old_notif = await old_db('notifications/'+id)
 					const notif = {
 						title: article.title,
-						blurb: old_notif.notificationBody ?? 'None',
+						blurb: old_notif?.notificationBody ?? 'None',
 						categoryID,
-						notifTimestamp: old_notif.notificationUnixEpoch ?? 0,
+						notifTimestamp: old_notif?.notificationUnixEpoch ?? 0,
 					}
 					database.ref('notifications/'+id).set(notif)
 				}
