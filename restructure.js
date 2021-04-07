@@ -23,7 +23,6 @@ firebase
 	.auth()
 	.signInWithEmailAndPassword(argv.email,argv.password)
 	.then(main)
-setTimeout(()=>process.exit(),60*1000)
 
 async function old_db(...path){
 	const response = await fetch('https://arcadia-high-mobile.firebaseio.com/'+path.join('/')+'.json')
@@ -44,6 +43,7 @@ async function main(){
 	const locationIDs = (await database.ref('locationIDs').get()).val()
 	const locations = (await database.ref('locations').get()).val()
 	const categories = (await database.ref('categoryIDs').get()).val()
+	const schemas = (await database.ref('schemas').get()).val()
 
 	let featured = []
 	let notifs = []
@@ -62,6 +62,7 @@ async function main(){
 					timestamp: old.articleUnixEpoch ?? 0,
 					featured: old.isFeatured ?? false,
 					notified: old.isNotified ?? false,
+					categoryID,
 				}
 		
 				article.markdown = old.articleMd ?? turned.turndown(article.body)
@@ -98,9 +99,9 @@ async function main(){
 					database.ref('notifications/'+id).set(notif)
 				}
 
-				database.ref('articles/'+id).set(filter_object(article,['title','author','body','date','featured','notified','imageURLs','videoIDs','views']))
+				database.ref('articles/'+id).set(filter_object(article,Object.keys(schemas.article)))
 				database.ref('markdowns/'+id).set(article.markdown)
-				database.ref('snippets/'+id).set(filter_object(article,['title','timestamp','featured','notified','views','thumbURLs']))
+				database.ref('snippets/'+id).set(filter_object(article,Object.keys(schemas.snippet)))
 			}
 			database
 				.ref('categories/'+categoryID+'/articleIDs')
@@ -110,4 +111,5 @@ async function main(){
 	database
 		.ref('categories/Featured/articleIDs')
 		.set(featured.sort((a,b)=>b[1]-a[1]).map(a=>a[0]))
+	process.exit()
 }
