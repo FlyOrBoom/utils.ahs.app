@@ -96,7 +96,7 @@ async function main(){
 						categoryID,
 						notifTimestamp: old_notif?.notificationUnixEpoch ?? 0,
 					}
-					database.ref('notifications/'+id).set(notif)
+					database.ref('notifs/'+id).set(notif)
 				}
 
 				database.ref('articles/'+id).set(filter_object(article,Object.keys(schemas.article)))
