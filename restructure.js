@@ -45,6 +45,16 @@ async function main(){
 	const categories = (await database.ref('categoryIDs').get()).val()
 	const schemas = (await database.ref('schemas').get()).val()
 
+	const storyTemplate = {}
+	for (const property in schemas.story) {
+		storyTemplate[property] = {
+			'Array<String>': [],
+			'String': '',
+			'Boolean': false,
+			'Int': 0,
+		}[schemas.story[property]]
+	}
+
 	let featured = []
 	let notifs = []
 	for (const locationID of locationIDs){
@@ -54,27 +64,26 @@ async function main(){
 			if(!remote) continue
 			for(const id in remote){
 				const old = remote[id]
-				const article = {
+				const story = Object.assign({},storyTemplate,{
 					id,
-					title: old.articleTitle ?? 'None',
-					author: old.articleAuthor ?? 'None',
-					body: old.articleBody ?? 'None',
+					title: old.articleTitle ?? '',
+					author: old.articleAuthor ?? '',
+					body: old.articleBody ?? '',
 					timestamp: old.articleUnixEpoch ?? 0,
 					featured: old.isFeatured ?? false,
 					notified: old.isNotified ?? false,
 					categoryID,
-				}
-		
-				article.markdown = old.articleMd ?? turned.turndown(article.body)
-				if(old.articleImages) article.imageURLs = old.articleImages
-				if(old.articleVideoIDs) article.videoIDs = old.articleVideoIDs
-				article.date = new Date(article.timestamp * 1000).toLocaleDateString(undefined, {
-					weekday: 'long',
-					month: 'long',
-					day: 'numeric'
+					views: old.articleViews ?? 0,
+					imageURLs: old.articleImages ?? [],
+					videoIDs: old.articleVideoIDs ?? [],
+					markdown: old.articleMd ?? turned.turndown(old.articleBody ?? ''),
+					date: new Date(old.articleUnixEpoch.timestamp * 1000).toLocaleDateString(undefined, {
+						weekday: 'long',
+						month: 'long',
+						day: 'numeric'
+					})
 				})
-				article.views = old.articleViews ?? 0
-				if(article.imageURLs?.length){
+				if(story.imageURLs?.length){
 // 						const body = new FormData()
 // 						body.append('image', article.imageURLs[0])
 // 						const response = await fetch(argv.imgbb, {
@@ -84,24 +93,24 @@ async function main(){
 // 						const result = await response.json()
 // 						const thumb = result?.data?.thumb?.url
 // 						if(thumb) article.thumbURLs = [thumb]
-					article.thumbURLs = [article.imageURLs[0]]
+					story.thumbURLs = [story.imageURLs[0]]
 				}
 
-				if(article.featured) featured.push([id,article.timestamp])
-				if(article.notified) {
+				if(story.featured) featured.push([id,story.timestamp])
+				if(story.notified) {
 					const old_notif = await old_db('notifications/'+id)
-					const notif = {
-						title: article.title,
-						blurb: old_notif?.notificationBody ?? 'None',
-						categoryID,
-						notifTimestamp: old_notif?.notificationUnixEpoch ?? 0,
+					if(old_notif){
+						Object.assign(story,{
+							blurb: old_notif.notificationBody ?? 'None',
+							notifTimestamp: old_notif.notificationUnixEpoch ?? story.timestamp ?? 0,
+						})
 					}
-					database.ref('notifs/'+id).set(notif)
 				}
 
-				database.ref('articles/'+id).set(filter_object(article,Object.keys(schemas.article)))
-				database.ref('markdowns/'+id).set(article.markdown)
-				database.ref('snippets/'+id).set(filter_object(article,Object.keys(schemas.snippet)))
+				database.ref('articles/'+id).set(filter_object(story,Object.keys(schemas.article)))
+				database.ref('snippets/'+id).set(filter_object(story,Object.keys(schemas.snippet)))
+				if(story.notified) database.ref('notifs/'+id).set(filter_object(story,Object.keys(schemas.notif)))
+				database.ref('storys/'+id).set(story)
 			}
 			database
 				.ref('categories/'+categoryID+'/articleIDs')
