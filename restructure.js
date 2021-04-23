@@ -45,16 +45,6 @@ async function main(){
 	const categories = (await database.ref('categoryIDs').get()).val()
 	const schemas = (await database.ref('schemas').get()).val()
 
-	const storyTemplate = {}
-	for (const property in schemas.story) {
-		storyTemplate[property] = {
-			'Array<String>': [],
-			'String': '',
-			'Boolean': false,
-			'Int': 0,
-		}[schemas.story[property]]
-	}
-
 	let featured = []
 	let notifs = []
 	for (const locationID of locationIDs){
@@ -64,11 +54,12 @@ async function main(){
 			if(!remote) continue
 			for(const id in remote){
 				const old = remote[id]
-				const story = Object.assign({},storyTemplate,{
-					id,
+				const story = {
 					title: old.articleTitle ?? '',
 					author: old.articleAuthor ?? '',
 					body: old.articleBody ?? '',
+					blurb: '',
+					notifTimestamp: 0,
 					timestamp: old.articleUnixEpoch ?? 0,
 					featured: old.isFeatured ?? false,
 					notified: old.isNotified ?? false,
@@ -77,12 +68,12 @@ async function main(){
 					imageURLs: old.articleImages ?? [],
 					videoIDs: old.articleVideoIDs ?? [],
 					markdown: old.articleMd ?? turned.turndown(old.articleBody ?? ''),
-					date: new Date(old.articleUnixEpoch.timestamp * 1000).toLocaleDateString(undefined, {
+					date: new Date(old.articleUnixEpoch * 1000).toLocaleDateString(undefined, {
 						weekday: 'long',
 						month: 'long',
 						day: 'numeric'
 					})
-				})
+				}
 				if(story.imageURLs?.length){
 // 						const body = new FormData()
 // 						body.append('image', article.imageURLs[0])
@@ -101,11 +92,12 @@ async function main(){
 					const old_notif = await old_db('notifications/'+id)
 					if(old_notif){
 						Object.assign(story,{
-							blurb: old_notif.notificationBody ?? 'None',
-							notifTimestamp: old_notif.notificationUnixEpoch ?? story.timestamp ?? 0,
+							blurb: old_notif.notificationBody ?? story.blurb,
+							notifTimestamp: old_notif.notificationUnixEpoch ?? story.timestamp,
 						})
 					}
 				}
+				console.log(story.author)
 
 				database.ref('articles/'+id).set(filter_object(story,Object.keys(schemas.article)))
 				database.ref('snippets/'+id).set(filter_object(story,Object.keys(schemas.snippet)))
